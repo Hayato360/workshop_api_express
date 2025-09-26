@@ -14,6 +14,12 @@ const orderSchema = new mongoose.Schema({
     items: [itemSchema],
     buyer: {type: mongoose.Schema.Types.ObjectId, ref: 'user', required: true},
     totalAmount: {type: Number, required: true},
+    status: {
+        type: String, 
+        enum: ['pending', 'processing', 'completed', 'cancelled'], 
+        default: 'pending'
+    },
+    completedAt: {type: Date},
     createAt: {type:Date , default: Date.now}
 })
 

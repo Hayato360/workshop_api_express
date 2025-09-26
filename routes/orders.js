@@ -71,4 +71,66 @@ router.get('/:id', authMiddleware, async (req, res) => {
   res.json(order);
 });
 
+// Update order status (admin only)
+router.patch('/:id/status', authMiddleware, async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Only admin can update order status' });
+    }
+
+    const { status } = req.body;
+    const validStatuses = ['pending', 'processing', 'completed', 'cancelled'];
+    
+    if (!status || !validStatuses.includes(status)) {
+      return res.status(400).json({ 
+        message: 'Valid status required', 
+        validStatuses: validStatuses 
+      });
+    }
+
+    const updateData = { status };
+    if (status === 'completed') {
+      updateData.completedAt = new Date();
+    }
+
+    const order = await Order.findByIdAndUpdate(
+      req.params.id, 
+      updateData, 
+      { new: true }
+    ).populate('items.product').populate('buyer');
+
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    res.json(order);
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating order status', error });
+  }
+});
+
+// Get orders by status (admin only)
+router.get('/status/:status', authMiddleware, async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Admin access required' });
+    }
+
+    const { status } = req.params;
+    const validStatuses = ['pending', 'processing', 'completed', 'cancelled'];
+    
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ 
+        message: 'Invalid status', 
+        validStatuses: validStatuses 
+      });
+    }
+
+    const orders = await Order.find({ status }).populate('items.product').populate('buyer');
+    res.json(orders);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching orders by status', error });
+  }
+});
+
 module.exports = router;
