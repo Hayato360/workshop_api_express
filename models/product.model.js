@@ -6,6 +6,7 @@ const productSchema = new mongoose.Schema({
     description: {type: String},
     price: {type: Number, required: true, min: 0},
     stock: {type: Number, required: true, min: 0},
+    image: {type: String}, // URL or path to product image
 },{
     timestamps: true
 });

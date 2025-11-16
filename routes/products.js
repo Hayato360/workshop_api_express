@@ -3,7 +3,7 @@ const router = express.Router();
 const Product = require('../models/product.model');
 const { authMiddleware, adminOnly } = require('../middleware/auth');
 
-router.get('/', authMiddleware, async (req, res) => {
+router.get('/', async (req, res) => {
     const products = await Product.find();
     res.json(products);
 });
